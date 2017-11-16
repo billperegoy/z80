@@ -17,5 +17,5 @@ defmodule Z80 do
   end
 end
 
-{:ok, rom} = File.read("/Users/bill/Projects/z80/lib/level1.rom")
-Rom.extract(rom)
+{:ok, rom_contents} = File.read("/Users/bill/Projects/z80/lib/level1.rom")
+Rom.fetch(rom_contents)
