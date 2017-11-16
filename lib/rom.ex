@@ -9,52 +9,51 @@ defmodule Rom do
     <<byte::8>> <> rest = rom
 
     if two_byte_instruction?(<<byte::8>>) do
-      <<operand:: size(8)>> <> rest = rest
-      decode_instruction(address, <<byte::8>>, <<operand::8>>);
+      <<operand::size(8)>> <> rest = rest
+      decode_instruction(address, <<byte::8>>, <<operand::8>>)
       extract(rest, address + 2)
     else
       if three_byte_instruction?(<<byte::8>>) do
-      <<operand1:: size(8)>> <> <<operand2:: size(8)>> <> rest = rest
-        decode_instruction(address, <<byte::8>>, <<operand1::8>>, <<operand2::8>>);
+        <<operand1::size(8)>> <> <<operand2::size(8)>> <> rest = rest
+        decode_instruction(address, <<byte::8>>, <<operand1::8>>, <<operand2::8>>)
         extract(rest, address + 3)
       else
-        decode_instruction(address, <<byte::8>>);
+        decode_instruction(address, <<byte::8>>)
         extract(rest, address + 1)
       end
     end
   end
 
-
-  def two_byte_instruction?(<<0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do:  true
-  def two_byte_instruction?(<<0xfe::size(8)>>), do:  true
-  def two_byte_instruction?(<<0xd6::size(8)>>), do:  true
-  def two_byte_instruction?(<<0x20::size(8)>>), do:  true
-  def two_byte_instruction?(<<0x28::size(8)>>), do:  true
+  def two_byte_instruction?(<<0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do: true
+  def two_byte_instruction?(<<0xFE::size(8)>>), do: true
+  def two_byte_instruction?(<<0xD6::size(8)>>), do: true
+  def two_byte_instruction?(<<0x20::size(8)>>), do: true
+  def two_byte_instruction?(<<0x28::size(8)>>), do: true
   def two_byte_instruction?(_), do: false
 
-  def three_byte_instruction?(<<0xc3::size(8)>>), do:  true
-  def three_byte_instruction?(<<0xcd::size(8)>>), do:  true
-  def three_byte_instruction?(<<0::size(2)>> <> <<_dest::size(2)>> <> <<0x1::size(4)>>), do:  true
+  def three_byte_instruction?(<<0xC3::size(8)>>), do: true
+  def three_byte_instruction?(<<0xCD::size(8)>>), do: true
+  def three_byte_instruction?(<<0::size(2)>> <> <<_dest::size(2)>> <> <<0x1::size(4)>>), do: true
   def three_byte_instruction?(_), do: false
 
   # NOP - 0x00
-  def decode_instruction(address, <<0x00::8>>), do: IO.puts "#{address} NOP"
+  def decode_instruction(address, <<0x00::8>>), do: IO.puts("#{address} NOP")
 
   # RET - 0xc9
-  def decode_instruction(address, <<0xc9::8>>), do: IO.puts "#{address} RET"
+  def decode_instruction(address, <<0xC9::8>>), do: IO.puts("#{address} RET")
 
   # DI - 0xf3
-  def decode_instruction(address, <<0xf3::8>>), do: IO.puts "#{address} DI"
+  def decode_instruction(address, <<0xF3::8>>), do: IO.puts("#{address} DI")
 
   # RST - 0xff
-  def decode_instruction(address, <<0xff::8>>), do: IO.puts "#{address} RST"
+  def decode_instruction(address, <<0xFF::8>>), do: IO.puts("#{address} RST")
 
-  def decode_instruction(address, <<0xe3::8>>), do: IO.puts "#{address} EX (SP), HL"
-  def decode_instruction(address, <<0xbe::8>>), do: IO.puts "#{address} CP (HL)"
-  def decode_instruction(address, <<0xd9::8>>), do: IO.puts "#{address} EXX"
-  def decode_instruction(address, <<0x08::8>>), do: IO.puts "#{address} EX AF, AF'"
-  def decode_instruction(address, <<0x1a::8>>), do: IO.puts "#{address} LD A, (DE)"
-  def decode_instruction(address, <<0x3f::8>>), do: IO.puts "#{address} CCF"
+  def decode_instruction(address, <<0xE3::8>>), do: IO.puts("#{address} EX (SP), HL")
+  def decode_instruction(address, <<0xBE::8>>), do: IO.puts("#{address} CP (HL)")
+  def decode_instruction(address, <<0xD9::8>>), do: IO.puts("#{address} EXX")
+  def decode_instruction(address, <<0x08::8>>), do: IO.puts("#{address} EX AF, AF'")
+  def decode_instruction(address, <<0x1A::8>>), do: IO.puts("#{address} LD A, (DE)")
+  def decode_instruction(address, <<0x3F::8>>), do: IO.puts("#{address} CCF")
 
   def decode_instruction(address, <<0x3::size(2)>> <> <<page::size(3)>> <> <<0x7::size(3)>>) do
     page_val =
@@ -68,20 +67,20 @@ defmodule Rom do
         6 -> "30h"
         7 -> "38h"
       end
-    IO.puts "#{address} RST #{page_val}"
+
+    IO.puts("#{address} RST #{page_val}")
   end
-    
+
   def decode_instruction(address, <<0x14::size(5)>> <> <<src::size(3)>>) do
     src_reg = decode_register8(<<src::size(3)>>)
 
     case src_reg do
       {:ok, src_mnemonic} ->
-        IO.puts "#{address} AND #{src_mnemonic}"
+        IO.puts("#{address} AND #{src_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
     end
-    
   end
 
   # LD r,r - 0b01_ddd_sss
@@ -90,28 +89,29 @@ defmodule Rom do
     dest_reg = decode_register8(<<dest::size(3)>>)
 
     case {dest_reg, src_reg} do
-      {{:ok, dest_mnemonic}, { :ok, src_mnemonic}} ->
-        IO.puts "#{address} LD #{dest_mnemonic},#{src_mnemonic}"
+      {{:ok, dest_mnemonic}, {:ok, src_mnemonic}} ->
+        IO.puts("#{address} LD #{dest_mnemonic},#{src_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
     end
   end
 
   def decode_instruction(address, <<0x17::size(5)>> <> <<src::size(3)>>) do
     src_reg = decode_register8(<<src::size(3)>>)
+
     case src_reg do
       {:ok, src_mnemonic} ->
-        IO.puts "#{address} CP #{src_mnemonic}"
+        IO.puts("#{address} CP #{src_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
     end
   end
 
   def decode_instruction(address, <<0x3::size(2)>> <> <<cond_code::size(3)>> <> <<0x0::size(3)>>) do
     cond_code_val = decode_cond_code(<<cond_code::size(3)>>)
-    IO.puts "#{address} RET #{cond_code_val}"
+    IO.puts("#{address} RET #{cond_code_val}")
   end
 
   def decode_instruction(address, <<0::size(2)>> <> <<dest::size(2)>> <> <<0x3::size(4)>>) do
@@ -119,10 +119,10 @@ defmodule Rom do
 
     case dest_reg do
       {:ok, dest_mnemonic} ->
-        IO.puts "#{address} INC #{dest_mnemonic}"
+        IO.puts("#{address} INC #{dest_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
         Kernel.exit("Stopping")
     end
   end
@@ -132,10 +132,10 @@ defmodule Rom do
 
     case dest_reg do
       {:ok, dest_mnemonic} ->
-        IO.puts "#{address} POP #{dest_mnemonic}"
+        IO.puts("#{address} POP #{dest_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
         Kernel.exit("Stopping")
     end
   end
@@ -145,71 +145,77 @@ defmodule Rom do
 
     case dest_reg do
       {:ok, dest_mnemonic} ->
-        IO.puts "#{address} ADD HL,#{dest_mnemonic}"
+        IO.puts("#{address} ADD HL,#{dest_mnemonic}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
         Kernel.exit("Stopping")
     end
   end
 
   def decode_instruction(address, byte) when is_binary(byte) do
-    IO.inspect byte
-    #Kernel.exit("Stopping")
+    IO.inspect(byte)
+    # Kernel.exit("Stopping")
   end
 
   # LD r, n - 0b00_ddd_110
-  def decode_instruction(address, <<0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>, <<operand::size(8)>>) do
+  def decode_instruction(address, <<0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>, <<
+        operand::size(8)
+      >>) do
     dest_reg = decode_register8(<<dest::size(3)>>)
 
     case dest_reg do
       {:ok, dest_mnemonic} ->
-        IO.puts "#{address} LD #{dest_mnemonic},#{operand}"
+        IO.puts("#{address} LD #{dest_mnemonic},#{operand}")
 
       _ ->
-        IO.puts "Invalid Instruction"
-
+        IO.puts("Invalid Instruction")
     end
   end
 
-  def decode_instruction(address, <<0xd6::size(8)>>, <<operand::size(8)>>) do
-    IO.puts "#{address} SUB #{operand}"
+  def decode_instruction(address, <<0xD6::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} SUB #{operand}")
   end
 
   def decode_instruction(address, <<0x20::size(8)>>, <<operand::size(8)>>) do
-    IO.puts "#{address} JR NZ,#{operand}"
+    IO.puts("#{address} JR NZ,#{operand}")
   end
 
   def decode_instruction(address, <<0x28::size(8)>>, <<operand::size(8)>>) do
-    IO.puts "#{address} JR Z,#{operand}"
+    IO.puts("#{address} JR Z,#{operand}")
   end
 
-  def decode_instruction(address, <<0xfe::size(8)>>, <<operand::size(8)>>) do
-    IO.puts "#{address} CP #{operand}"
+  def decode_instruction(address, <<0xFE::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} CP #{operand}")
   end
 
-  def decode_instruction(address, <<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>, operand1, operand2) do
+  def decode_instruction(
+        address,
+        <<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>,
+        operand1,
+        operand2
+      ) do
     dest_reg = decode_register16(<<dest::size(2)>>)
     <<operand::16>> = operand2 <> operand1
 
     case dest_reg do
       {:ok, dest_mnemonic} ->
-        IO.puts "#{address} LD #{dest_mnemonic},#{operand}"
+        IO.puts("#{address} LD #{dest_mnemonic},#{operand}")
 
       _ ->
-        IO.puts "Invalid Instruction"
+        IO.puts("Invalid Instruction")
         Kernel.exit("Stopping")
     end
   end
 
-  def decode_instruction(address, <<0xc3::8>>, operand1, operand2) do
+  def decode_instruction(address, <<0xC3::8>>, operand1, operand2) do
     <<operand::16>> = operand2 <> operand1
-    IO.puts "#{address} JP #{operand}"
+    IO.puts("#{address} JP #{operand}")
   end
 
-  def decode_instruction(address, <<0xcd::8>>, operand1, operand2) do
+  def decode_instruction(address, <<0xCD::8>>, operand1, operand2) do
     <<operand::16>> = operand2 <> operand1
-    IO.puts "#{address} CALL #{operand}"
+    IO.puts("#{address} CALL #{operand}")
   end
 
   def decode_register8(<<7::size(3)>>), do: {:ok, "A"}
@@ -236,5 +242,5 @@ defmodule Rom do
   def decode_cond_code(<<0x7::size(3)>>), do: "M"
 end
 
-{:ok, rom} = File.read("/Users/bill/Projects/elm-z80/level1.rom") 
+{:ok, rom} = File.read("/Users/bill/Projects/elm-z80/level1.rom")
 Rom.extract(rom)
