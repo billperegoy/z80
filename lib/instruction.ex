@@ -1,13 +1,23 @@
 defmodule Instruction do
-  def two_byte?(<<0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do: true
+  def two_byte?(<<0x0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do: true
+  def two_byte?(<<0x0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(4)>>), do: true
   def two_byte?(<<0xFE::size(8)>>), do: true
   def two_byte?(<<0xD6::size(8)>>), do: true
   def two_byte?(<<0x20::size(8)>>), do: true
   def two_byte?(<<0x28::size(8)>>), do: true
+  def two_byte?(<<0xed::size(8)>>), do: true
+  def two_byte?(<<0xcb::size(8)>>), do: true
+  def two_byte?(<<0xd3::size(8)>>), do: true
+  def two_byte?(<<0xe6::size(8)>>), do: true
+  def two_byte?(<<0x18::size(8)>>), do: true
+  def two_byte?(<<0x38::size(8)>>), do: true
   def two_byte?(_), do: false
 
   def three_byte?(<<0xC3::size(8)>>), do: true
   def three_byte?(<<0xCD::size(8)>>), do: true
+  def three_byte?(<<0x2a::size(8)>>), do: true
+  def three_byte?(<<0x32::size(8)>>), do: true
+  def three_byte?(<<0x3::size(2)>> <> <<_cond_code::size(3)>> <> <<0x2::size(3)>>), do: true
   def three_byte?(<<0::size(2)>> <> <<_dest::size(2)>> <> <<0x1::size(4)>>), do: true
   def three_byte?(_), do: false
 
@@ -27,8 +37,35 @@ defmodule Instruction do
   def decode(address, <<0xBE::8>>), do: IO.puts("#{address} CP (HL)")
   def decode(address, <<0xD9::8>>), do: IO.puts("#{address} EXX")
   def decode(address, <<0x08::8>>), do: IO.puts("#{address} EX AF, AF'")
-  def decode(address, <<0x1A::8>>), do: IO.puts("#{address} LD A, (DE)")
+  def decode(address, <<0x1A::8>>), do: IO.puts("#{address} LD A,(DE)")
   def decode(address, <<0x3F::8>>), do: IO.puts("#{address} CCF")
+  def decode(address, <<0x35::8>>), do: IO.puts("#{address} DEC (HL)")
+  def decode(address, <<0x17::8>>), do: IO.puts("#{address} RLA")
+  def decode(address, <<0xdd::8>>), do: IO.puts("#{address} DD ***")
+
+  def decode(address, <<1::size(2)>> <> <<src::size(3)>> <> <<0x6::size(3)>>) do
+    src_reg = Decode.reg8(<<src::size(3)>>)
+
+    case src_reg do
+      {:ok, src_mnemonic} ->
+        IO.puts("#{address} LD #{src_mnemonic},(HL)")
+
+      _ ->
+        IO.puts("Invalid Instruction -10")
+    end
+  end
+
+  def decode(address, <<0::size(2)>> <> <<src::size(3)>> <> <<0x4::size(3)>>) do
+    src_reg = Decode.reg8(<<src::size(3)>>)
+
+    case src_reg do
+      {:ok, src_mnemonic} ->
+        IO.puts("#{address} INC #{src_mnemonic}")
+
+      _ ->
+        IO.puts("Invalid Instruction -10")
+    end
+  end
 
   def decode(address, <<0x3::size(2)>> <> <<page::size(3)>> <> <<0x7::size(3)>>) do
     page_val =
@@ -46,7 +83,7 @@ defmodule Instruction do
     IO.puts("#{address} RST #{page_val}")
   end
 
-  def decode(address, <<0x14::size(5)>> <> <<src::size(3)>>) do
+  def decode(address, (<<0x14::size(5)>> <> <<src::size(3)>>) = instr) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
     case src_reg do
@@ -54,12 +91,13 @@ defmodule Instruction do
         IO.puts("#{address} AND #{src_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -1")
+        IO.inspect instr
     end
   end
 
   # LD r,r - 0b01_ddd_sss
-  def decode(address, <<1::size(2)>> <> <<dest::size(3)>> <> <<src::size(3)>>) do
+  def decode(address, (<<1::size(2)>> <> <<dest::size(3)>> <> <<src::size(3)>>) = instr) do
     src_reg = Decode.reg8(<<src::size(3)>>)
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
@@ -68,11 +106,12 @@ defmodule Instruction do
         IO.puts("#{address} LD #{dest_mnemonic},#{src_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -2")
+        IO.inspect instr
     end
   end
 
-  def decode(address, <<0x17::size(5)>> <> <<src::size(3)>>) do
+  def decode(address, (<<0x17::size(5)>> <> <<src::size(3)>>) = instr) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
     case src_reg do
@@ -80,7 +119,8 @@ defmodule Instruction do
         IO.puts("#{address} CP #{src_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -3")
+        IO.inspect instr
     end
   end
 
@@ -97,7 +137,7 @@ defmodule Instruction do
         IO.puts("#{address} INC #{dest_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -4")
         Kernel.exit("Stopping")
     end
   end
@@ -110,7 +150,7 @@ defmodule Instruction do
         IO.puts("#{address} POP #{dest_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+          IO.puts("Invalid Instruction -5")
         Kernel.exit("Stopping")
     end
   end
@@ -123,10 +163,48 @@ defmodule Instruction do
         IO.puts("#{address} ADD HL,#{dest_mnemonic}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -6")
         Kernel.exit("Stopping")
     end
   end
+
+  def decode(address, <<0x3::size(2)>> <> <<dest::size(2)>> <> <<0x5::size(4)>>) do
+    dest_reg = Decode.reg16(<<dest::size(2)>>)
+
+    case dest_reg do
+      {:ok, dest_mnemonic} ->
+        IO.puts("#{address} PUSH #{dest_mnemonic}")
+
+      _ ->
+        IO.puts("Invalid Instruction -7")
+        Kernel.exit("Stopping")
+    end
+  end
+
+  def decode(address, <<0x15::size(5)>> <> <<src::size(3)>>) do
+    src_reg = Decode.reg8(<<src::size(3)>>)
+
+    case src_reg do
+      {:ok, src_mnemonic} ->
+        IO.puts("#{address} XOR #{src_mnemonic}")
+
+      _ ->
+        IO.puts("Invalid Instruction -8")
+    end
+  end
+
+  def decode(address, <<0x0::size(2)>> <> <<src::size(3)>> <> <<0x5::size(3)>>) do
+    src_reg = Decode.reg8(<<src::size(3)>>)
+
+    case src_reg do
+      {:ok, src_mnemonic} ->
+        IO.puts("#{address} DEC #{src_mnemonic}")
+
+      _ ->
+        IO.puts("Invalid Instruction -8")
+    end
+  end
+
 
   def decode(address, byte) when is_binary(byte) do
     IO.inspect(byte)
@@ -134,9 +212,7 @@ defmodule Instruction do
   end
 
   # LD r, n - 0b00_ddd_110
-  def decode(address, <<0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>, <<
-        operand::size(8)
-      >>) do
+  def decode(address, <<0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>, << operand::size(8) >>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
     case dest_reg do
@@ -144,7 +220,7 @@ defmodule Instruction do
         IO.puts("#{address} LD #{dest_mnemonic},#{operand}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -10")
     end
   end
 
@@ -164,7 +240,31 @@ defmodule Instruction do
     IO.puts("#{address} CP #{operand}")
   end
 
-  def decode(address, <<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>, operand1, operand2) do
+  def decode(address, <<0xed::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} ED #{operand} ***")
+  end
+
+  def decode(address, <<0xcb::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} CB #{operand} ***")
+  end
+
+  def decode(address, <<0xd3::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} OUT #{operand}")
+  end
+
+  def decode(address, <<0xe6::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} AND #{operand}")
+  end
+
+  def decode(address, <<0x18::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} JR #{operand}")
+  end
+
+  def decode(address, <<0x38::size(8)>>, <<operand::size(8)>>) do
+    IO.puts("#{address} JR C,#{operand}")
+  end
+
+  def decode(address, (<<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>) = instr, operand1, operand2) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
     <<operand::16>> = operand2 <> operand1
 
@@ -173,7 +273,8 @@ defmodule Instruction do
         IO.puts("#{address} LD #{dest_mnemonic},#{operand}")
 
       _ ->
-        IO.puts("Invalid Instruction")
+        IO.puts("Invalid Instruction -11")
+        IO.inspect instr
         Kernel.exit("Stopping")
     end
   end
@@ -186,5 +287,21 @@ defmodule Instruction do
   def decode(address, <<0xCD::8>>, operand1, operand2) do
     <<operand::16>> = operand2 <> operand1
     IO.puts("#{address} CALL #{operand}")
+  end
+
+  def decode(address, <<0x2a::8>>, operand1, operand2) do
+    <<operand::16>> = operand2 <> operand1
+    IO.puts("#{address} LD HL,(#{operand})")
+  end
+
+  def decode(address, <<0x32::8>>, operand1, operand2) do
+    <<operand::16>> = operand2 <> operand1
+    IO.puts("#{address} LD (#{operand}),A")
+  end
+
+  def decode(address, <<0x3::size(2)>> <> <<cond_code::size(3)>> <> <<0x2::size(3)>>, operand1, operand2) do
+    cond_code_val = Decode.cond_code(<<cond_code::size(3)>>)
+    <<operand::16>> = operand2 <> operand1
+    IO.puts("#{address} JP #{cond_code_val}, #{operand}")
   end
 end
