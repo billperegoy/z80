@@ -72,7 +72,7 @@ defmodule Instruction do
 
   def decode(<<0x0e::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
-    "LD (HR),#{dest_reg}"
+    "LD (HL),#{dest_reg}"
   end
 
   def decode(<<1::size(2)>> <> <<src::size(3)>> <> <<0x6::size(3)>>) do
