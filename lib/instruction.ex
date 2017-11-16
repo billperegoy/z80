@@ -13,6 +13,11 @@ defmodule Instruction do
   def two_byte?(<<0x10::size(8)>>), do: true
   def two_byte?(<<0x36::size(8)>>), do: true
   def two_byte?(<<0xf6::size(8)>>), do: true
+  def two_byte?(<<0x30::size(8)>>), do: true
+  def two_byte?(<<0xc6::size(8)>>), do: true
+  def two_byte?(<<0xce::size(8)>>), do: true
+  def two_byte?(<<0xee::size(8)>>), do: true
+  def two_byte?(<<0xdb::size(8)>>), do: true
   def two_byte?(_), do: false
 
   def three_byte?(<<0xC3::size(8)>>), do: true
@@ -22,7 +27,9 @@ defmodule Instruction do
   def three_byte?(<<0x3a::size(8)>>), do: true
   def three_byte?(<<0x22::size(8)>>), do: true
   def three_byte?(<<0xc4::size(8)>>), do: true
+  def three_byte?(<<0xcc::size(8)>>), do: true
   def three_byte?(<<0x3::size(2)>> <> <<_cond_code::size(3)>> <> <<0x2::size(3)>>), do: true
+  def three_byte?(<<0x3::size(2)>> <> <<_cond_code::size(3)>> <> <<0x4::size(3)>>), do: true
   def three_byte?(<<0::size(2)>> <> <<_dest::size(2)>> <> <<0x1::size(4)>>), do: true
   def three_byte?(_), do: false
 
@@ -57,6 +64,25 @@ defmodule Instruction do
   def decode(<<0x86::size(8)>>), do: "ADD A, (HL)"
   def decode(<<0xfb::size(8)>>), do: "EI"
   def decode(<<0xf9::size(8)>>), do: "LD SP, HL"
+  def decode(<<0x0f::size(8)>>), do: "RRCA"
+  def decode(<<0xb6::size(8)>>), do: "OR (HL)"
+  def decode(<<0x0a::size(8)>>), do: "LD A, (BC)"
+  def decode(<<0x07::size(8)>>), do: "RLCA"
+  def decode(<<0x37::size(8)>>), do: "SCF"
+  def decode(<<0x1f::size(8)>>), do: "RRA"
+  def decode(<<0xfd::size(8)>>), do: "FD ***"
+
+  def decode(<<0x13::size(5)>> <> <<dest::size(3)>>) do
+    dest_reg = Decode.reg8(<<dest::size(3)>>)
+
+    case dest_reg do
+      {:ok, dest_mnemonic} ->
+        "SBC A,#{dest_mnemonic}"
+
+      _ ->
+        IO.puts("Invalid Instruction -10")
+    end
+  end
 
   def decode(<<0x0e::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
@@ -130,7 +156,8 @@ defmodule Instruction do
         "OR #{src_mnemonic}"
 
       _ ->
-        "Illegal 2"
+        <<x>> = instr
+        "Illegal 2: #{x}"
     end
   end
 
@@ -354,6 +381,26 @@ defmodule Instruction do
 
   def decode(<<0xf6::size(8)>>, <<operand::size(8)>>) do
     "OR #{operand}"
+  end
+
+  def decode(<<0x30::size(8)>>, <<operand::size(8)>>) do
+    "JR NC, #{operand}"
+  end
+
+  def decode(<<0xc6::size(8)>>, <<operand::size(8)>>) do
+    "ADD A, #{operand}"
+  end
+
+  def decode(<<0xce::size(8)>>, <<operand::size(8)>>) do
+    "ADC A, #{operand}"
+  end
+
+  def decode(<<0xee::size(8)>>, <<operand::size(8)>>) do
+    "XOR #{operand}"
+  end
+
+  def decode(<<0xdb::size(8)>>, <<operand::size(8)>>) do
+    "IN A,( #{operand})"
   end
 
   def decode((<<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>) = instr, operand1, operand2) do
