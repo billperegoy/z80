@@ -4,7 +4,7 @@ defmodule Rom do
   def fetch(<<>>, _address), do: nil
 
   def fetch(rom, address) do
-    <<byte::8>> <> rest = rom
+    <<byte::size(8)>> <> rest = rom
 
     if Instruction.two_byte?(<<byte::8>>) do
       <<operand::size(8)>> <> rest = rest

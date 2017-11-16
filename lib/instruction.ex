@@ -118,8 +118,7 @@ defmodule Instruction do
         "AND #{src_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -1")
-        IO.inspect instr
+        "Illegal 1"
     end
   end
 
@@ -131,8 +130,7 @@ defmodule Instruction do
         "OR #{src_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -1")
-        IO.inspect instr
+        "Illegal 2"
     end
   end
 
@@ -146,8 +144,7 @@ defmodule Instruction do
         "LD #{dest_mnemonic},#{src_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -2")
-        IO.inspect instr
+        "Illegal 3"
     end
   end
 
@@ -159,8 +156,7 @@ defmodule Instruction do
         "CP #{src_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -3")
-        IO.inspect instr
+        "Illegal 4"
     end
   end
 
@@ -213,8 +209,7 @@ defmodule Instruction do
         "SUB #{dest_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -6")
-        IO.inspect instr
+        "Illegal 5"
     end
   end
 
@@ -226,8 +221,7 @@ defmodule Instruction do
         "ADD #{dest_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -6")
-        IO.inspect instr
+        "Illegal 6"
     end
   end
 
@@ -263,8 +257,7 @@ defmodule Instruction do
         "XOR #{src_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -8")
-        IO.inspect instr
+        "Illegal 7"
     end
   end
 
@@ -288,14 +281,13 @@ defmodule Instruction do
         "ADC A,#{dest_mnemonic}"
 
       _ ->
-        IO.puts("Invalid Instruction -10")
-        IO.inspect instr
+        "Illegal 8"
     end
   end
 
 
-  def decode(byte) when is_binary(byte) do
-    IO.inspect(<<0>> <> byte)
+  def decode(<<byte>>) do
+    "Illegal 10: #{byte}"
   end
 
 
@@ -312,8 +304,7 @@ defmodule Instruction do
         "LD #{dest_mnemonic}, #{operand}"
 
       _ ->
-        IO.puts("Invalid Instruction -10")
-        IO.inspect instr
+        "Illegal 11"
     end
   end
 
@@ -374,9 +365,12 @@ defmodule Instruction do
         "LD #{dest_mnemonic},#{operand}"
 
       _ ->
-        IO.puts("Invalid Instruction -11")
-        IO.inspect instr
+        "Illegal 12"
     end
+  end
+
+  def decode(<<instr>>, _operand) do
+    "Illegal 13"
   end
 
   def decode(<<0xC3::8>>, operand1, operand2) do
