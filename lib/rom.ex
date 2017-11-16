@@ -8,15 +8,18 @@ defmodule Rom do
 
     if Instruction.two_byte?(<<byte::8>>) do
       <<operand::size(8)>> <> rest = rest
-      Instruction.decode(address, <<byte::8>>, <<operand::8>>)
+      opcode = Instruction.decode(<<byte::8>>, <<operand::8>>)
+      IO.puts "#{address} #{opcode}"
       fetch(rest, address + 2)
     else
       if Instruction.three_byte?(<<byte::8>>) do
         <<operand1::size(8)>> <> <<operand2::size(8)>> <> rest = rest
-        Instruction.decode(address, <<byte::8>>, <<operand1::8>>, <<operand2::8>>)
+        opcode = Instruction.decode(<<byte::8>>, <<operand1::8>>, <<operand2::8>>)
+        IO.puts "#{address} #{opcode}"
         fetch(rest, address + 3)
       else
-        Instruction.decode(address, <<byte::8>>)
+        opcode = Instruction.decode(<<byte::8>>)
+        IO.puts "#{address} #{opcode}"
         fetch(rest, address + 1)
       end
     end
