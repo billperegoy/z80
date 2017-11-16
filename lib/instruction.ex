@@ -75,116 +75,55 @@ defmodule Instruction do
   def decode(<<0x13::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "SBC A,#{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -10")
-    end
+    "SBC A,#{dest_reg}"
   end
 
   def decode(<<0x0e::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "LD (HR),#{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -10")
-    end
+    "LD (HR),#{dest_reg}"
   end
 
   def decode(<<1::size(2)>> <> <<src::size(3)>> <> <<0x6::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "LD #{src_mnemonic},(HL)"
-
-      _ ->
-        IO.puts("Invalid Instruction -10")
-    end
+    "LD #{src_reg},(HL)"
   end
 
   def decode(<<0::size(2)>> <> <<src::size(3)>> <> <<0x4::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "INC #{src_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -10")
-    end
+    "INC #{src_reg}"
   end
 
   def decode(<<0x3::size(2)>> <> <<page::size(3)>> <> <<0x7::size(3)>>) do
-    page_val =
-      case page do
-        0 -> "00h"
-        1 -> "08h"
-        2 -> "10h"
-        3 -> "18h"
-        4 -> "20h"
-        5 -> "28h"
-        6 -> "30h"
-        7 -> "38h"
-      end
-
-    "RST #{page_val}"
+    "RST #{Decode.page_val(page)}"
   end
 
-  def decode((<<0x14::size(5)>> <> <<src::size(3)>>) = instr) do
+  def decode(<<0x14::size(5)>> <> <<src::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "AND #{src_mnemonic}"
-
-      _ ->
-        "Illegal 1"
-    end
+    "AND #{src_reg}"
   end
 
-  def decode((<<0x16::size(5)>> <> <<src::size(3)>>) = instr) do
+  def decode(<<0x16::size(5)>> <> <<src::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "OR #{src_mnemonic}"
-
-      _ ->
-        <<x>> = instr
-        "Illegal 2: #{x}"
-    end
+    "OR #{src_reg}"
   end
 
   # LD r,r - 0b01_ddd_sss
-  def decode((<<1::size(2)>> <> <<dest::size(3)>> <> <<src::size(3)>>) = instr) do
+  def decode(<<1::size(2)>> <> <<dest::size(3)>> <> <<src::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case {dest_reg, src_reg} do
-      {{:ok, dest_mnemonic}, {:ok, src_mnemonic}} ->
-        "LD #{dest_mnemonic},#{src_mnemonic}"
-
-      _ ->
-        "Illegal 3"
-    end
+    "LD #{dest_reg},#{src_reg}"
   end
 
-  def decode((<<0x17::size(5)>> <> <<src::size(3)>>) = instr) do
+  def decode(<<0x17::size(5)>> <> <<src::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "CP #{src_mnemonic}"
-
-      _ ->
-        "Illegal 4"
-    end
+    "CP #{src_reg}"
   end
 
   def decode(<<0x3::size(2)>> <> <<cond_code::size(3)>> <> <<0x0::size(3)>>) do
@@ -195,126 +134,66 @@ defmodule Instruction do
   def decode(<<0x0::size(2)>> <> <<dest::size(2)>> <> <<0x0b::size(4)>>) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "DEC #{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -4")
-    end
+    "DEC #{dest_reg}"
   end
 
   def decode(<<0::size(2)>> <> <<dest::size(2)>> <> <<0x3::size(4)>>) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "INC #{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -4")
-    end
+    "INC #{dest_reg}"
   end
 
   def decode(<<0x3::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "POP #{dest_mnemonic}"
-
-      _ ->
-          IO.puts("Invalid Instruction -5")
-    end
+    "POP #{dest_reg}"
   end
 
-  def decode((<<0x12::size(5)>> <> <<dest::size(3)>>) = instr) do
+  def decode(<<0x12::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "SUB #{dest_mnemonic}"
-
-      _ ->
-        "Illegal 5"
-    end
+    "SUB #{dest_reg}"
   end
 
-  def decode((<<0x10::size(5)>> <> <<dest::size(3)>>) = instr) do
+  def decode(<<0x10::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "ADD #{dest_mnemonic}"
-
-      _ ->
-        "Illegal 6"
-    end
+    "ADD #{dest_reg}"
   end
 
   def decode(<<0x0::size(2)>> <> <<dest::size(2)>> <> <<0x9::size(4)>>) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "ADD HL,#{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -6")
-    end
+    "ADD HL,#{dest_reg}"
   end
 
   def decode(<<0x3::size(2)>> <> <<dest::size(2)>> <> <<0x5::size(4)>>) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "PUSH #{dest_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -7")
-    end
+    "PUSH #{dest_reg}"
   end
 
-  def decode((<<0x15::size(5)>> <> <<src::size(3)>>) = instr) do
+  def decode(<<0x15::size(5)>> <> <<src::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "XOR #{src_mnemonic}"
-
-      _ ->
-        "Illegal 7"
-    end
+    "XOR #{src_reg}"
   end
 
   def decode(<<0x0::size(2)>> <> <<src::size(3)>> <> <<0x5::size(3)>>) do
     src_reg = Decode.reg8(<<src::size(3)>>)
 
-    case src_reg do
-      {:ok, src_mnemonic} ->
-        "DEC #{src_mnemonic}"
-
-      _ ->
-        IO.puts("Invalid Instruction -8")
-    end
+    "DEC #{src_reg}"
   end
  
-  def decode((<<0x11::size(5)>> <> <<dest::size(3)>>) = instr) do
+  def decode(<<0x11::size(5)>> <> <<dest::size(3)>>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
 
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "ADC A,#{dest_mnemonic}"
-
-      _ ->
-        "Illegal 8"
-    end
+    "ADC A,#{dest_reg}"
   end
 
 
-  def decode(<<byte>>) do
-    "Illegal 10: #{byte}"
+  def decode(<<_byte>>) do
+    raise "Illegal instruction"
   end
 
 
@@ -323,102 +202,29 @@ defmodule Instruction do
   end
 
   # LD r, n - 0b00_ddd_110
-  def decode((<<0x0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>) = instr, << operand::size(8) >>) do
+  def decode(<<0x0::size(2)>> <> <<dest::size(3)>> <> <<0x6::size(3)>>, << operand::size(8) >>) do
     dest_reg = Decode.reg8(<<dest::size(3)>>)
-
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "LD #{dest_mnemonic}, #{operand}"
-
-      _ ->
-        "Illegal 11"
-    end
+    "LD #{dest_reg}, #{operand}"
   end
 
-  def decode(<<0xD6::size(8)>>, <<operand::size(8)>>) do
-    "SUB #{operand}"
-  end
-
-  def decode(<<0x20::size(8)>>, <<operand::size(8)>>) do
-    "JR NZ,#{operand}"
-  end
-
-  def decode(<<0x28::size(8)>>, <<operand::size(8)>>) do
-    "JR Z,#{operand}"
-  end
-
-  def decode(<<0xFE::size(8)>>, <<operand::size(8)>>) do
-    "CP #{operand}"
-  end
-
-  def decode(<<0xed::size(8)>>, <<operand::size(8)>>) do
-    "ED #{operand} ***"
-  end
-
-  def decode(<<0xcb::size(8)>>, <<operand::size(8)>>) do
-    "CB #{operand} ***"
-  end
-
-  def decode(<<0xd3::size(8)>>, <<operand::size(8)>>) do
-    "OUT #{operand}"
-  end
-
-  def decode(<<0xe6::size(8)>>, <<operand::size(8)>>) do
-    "AND #{operand}"
-  end
-
-  def decode(<<0x18::size(8)>>, <<operand::size(8)>>) do
-    "JR #{operand}"
-  end
-
-  def decode(<<0x38::size(8)>>, <<operand::size(8)>>) do
-    "JR C,#{operand}"
-  end
-
-  def decode(<<0x10::size(8)>>, <<operand::size(8)>>) do
-    "DJNZ #{operand}"
-  end
-
-  def decode(<<0xf6::size(8)>>, <<operand::size(8)>>) do
-    "OR #{operand}"
-  end
-
-  def decode(<<0x30::size(8)>>, <<operand::size(8)>>) do
-    "JR NC, #{operand}"
-  end
-
-  def decode(<<0xc6::size(8)>>, <<operand::size(8)>>) do
-    "ADD A, #{operand}"
-  end
-
-  def decode(<<0xce::size(8)>>, <<operand::size(8)>>) do
-    "ADC A, #{operand}"
-  end
-
-  def decode(<<0xee::size(8)>>, <<operand::size(8)>>) do
-    "XOR #{operand}"
-  end
-
-  def decode(<<0xdb::size(8)>>, <<operand::size(8)>>) do
-    "IN A,( #{operand})"
-  end
-
-  def decode((<<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>) = instr, operand1, operand2) do
-    dest_reg = Decode.reg16(<<dest::size(2)>>)
-    <<operand::size(16)>> = operand2 <> operand1
-
-    case dest_reg do
-      {:ok, dest_mnemonic} ->
-        "LD #{dest_mnemonic},#{operand}"
-
-      _ ->
-        "Illegal 12"
-    end
-  end
-
-  def decode(<<instr>>, _operand) do
-    "Illegal 13"
-  end
+  def decode(<<0xD6::size(8)>>, <<operand::size(8)>>), do: "SUB #{operand}"
+  def decode(<<0x20::size(8)>>, <<operand::size(8)>>), do: "JR NZ,#{operand}"
+  def decode(<<0x28::size(8)>>, <<operand::size(8)>>), do: "JR Z,#{operand}"
+  def decode(<<0xFE::size(8)>>, <<operand::size(8)>>), do: "CP #{operand}"
+  def decode(<<0xed::size(8)>>, <<operand::size(8)>>), do: "ED #{operand} ***"
+  def decode(<<0xcb::size(8)>>, <<operand::size(8)>>), do: "CB #{operand} ***"
+  def decode(<<0xd3::size(8)>>, <<operand::size(8)>>), do: "OUT #{operand}"
+  def decode(<<0xe6::size(8)>>, <<operand::size(8)>>), do: "AND #{operand}"
+  def decode(<<0x18::size(8)>>, <<operand::size(8)>>), do: "JR #{operand}"
+  def decode(<<0x38::size(8)>>, <<operand::size(8)>>), do: "JR C,#{operand}"
+  def decode(<<0x10::size(8)>>, <<operand::size(8)>>), do: "DJNZ #{operand}"
+  def decode(<<0xf6::size(8)>>, <<operand::size(8)>>), do: "OR #{operand}"
+  def decode(<<0x30::size(8)>>, <<operand::size(8)>>), do: "JR NC, #{operand}"
+  def decode(<<0xc6::size(8)>>, <<operand::size(8)>>), do: "ADD A, #{operand}"
+  def decode(<<0xce::size(8)>>, <<operand::size(8)>>), do: "ADC A, #{operand}"
+  def decode(<<0xee::size(8)>>, <<operand::size(8)>>), do: "XOR #{operand}"
+  def decode(<<0xdb::size(8)>>, <<operand::size(8)>>), do: "IN A,(#{operand})"
+  def decode(<<_instr>>, _operand), do: raise "Invalid instruction"
 
   def decode(<<0xC3::8>>, operand1, operand2) do
     <<operand::size(16)>> = operand2 <> operand1
@@ -448,6 +254,13 @@ defmodule Instruction do
   def decode(<<0x22::size(8)>>, operand1, operand2) do
     <<operand::size(16)>> = operand2 <> operand1
     "LD (#{operand}),HL"
+  end
+
+  def decode(<<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>, operand1, operand2) do
+    dest_reg = Decode.reg16(<<dest::size(2)>>)
+    <<operand::size(16)>> = operand2 <> operand1
+
+    "LD #{dest_reg},#{operand}"
   end
 
   def decode(<<0x3::size(2)>> <> <<cond_code::size(3)>> <> <<0x2::size(3)>>, operand1, operand2) do

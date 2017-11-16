@@ -6,14 +6,6 @@ defmodule Z80Test do
     assert Instruction.decode(<<0x00>>) == "NOP"
   end
 
-  test "LD BC, (23)" do
-    assert Instruction.decode(<<0x01>>, <<23>>) == "LD BC, (23)"
-  end
-
-  test "LD DE, (23)" do
-    assert Instruction.decode(<<0x11>>, <<23>>) == "LD DE, (23)"
-  end
-
   test "RET" do
     assert Instruction.decode(<<0xc9>>) == "RET"
   end
