@@ -3,19 +3,9 @@ defmodule Z80 do
   Documentation for Z80.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Z80.hello
-      :world
-
-  """
-  def hello do
-    :world
+  def run do
+    {:ok, rom_contents} = File.read("/Users/bill/Projects/z80/lib/level1.rom")
+    Rom.fetch(rom_contents)
   end
 end
 
-{:ok, rom_contents} = File.read("/Users/bill/Projects/z80/lib/level1.rom")
-Rom.fetch(rom_contents)
