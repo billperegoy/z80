@@ -16,3 +16,6 @@ defmodule Z80 do
     :world
   end
 end
+
+{:ok, rom} = File.read("/Users/bill/Projects/z80/lib/level1.rom")
+Rom.extract(rom)
