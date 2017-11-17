@@ -1,38 +1,41 @@
 defmodule Instruction do
-  def two_byte?(<<0x0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do: true
-  def two_byte?(<<0xFE::size(8)>>), do: true
   def two_byte?(<<0xD6::size(8)>>), do: true
+  def two_byte?(<<0x10::size(8)>>), do: true
+  def two_byte?(<<0x18::size(8)>>), do: true
   def two_byte?(<<0x20::size(8)>>), do: true
   def two_byte?(<<0x28::size(8)>>), do: true
-  def two_byte?(<<0xed::size(8)>>), do: true
-  def two_byte?(<<0xcb::size(8)>>), do: true
-  def two_byte?(<<0xd3::size(8)>>), do: true
-  def two_byte?(<<0xe6::size(8)>>), do: true
-  def two_byte?(<<0x18::size(8)>>), do: true
-  def two_byte?(<<0x38::size(8)>>), do: true
-  def two_byte?(<<0x10::size(8)>>), do: true
-  def two_byte?(<<0x36::size(8)>>), do: true
-  def two_byte?(<<0xf6::size(8)>>), do: true
   def two_byte?(<<0x30::size(8)>>), do: true
+  def two_byte?(<<0x36::size(8)>>), do: true
+  def two_byte?(<<0x38::size(8)>>), do: true
   def two_byte?(<<0xc6::size(8)>>), do: true
+  def two_byte?(<<0xcb::size(8)>>), do: true
   def two_byte?(<<0xce::size(8)>>), do: true
-  def two_byte?(<<0xee::size(8)>>), do: true
+  def two_byte?(<<0xd3::size(8)>>), do: true
   def two_byte?(<<0xdb::size(8)>>), do: true
+  def two_byte?(<<0xe6::size(8)>>), do: true
+  def two_byte?(<<0xed::size(8)>>), do: true
+  def two_byte?(<<0xee::size(8)>>), do: true
+  def two_byte?(<<0xf6::size(8)>>), do: true
+  def two_byte?(<<0xfe::size(8)>>), do: true
+  def two_byte?(<<0x0::size(2)>> <> <<_dest::size(3)>> <> <<0x6::size(3)>>), do: true
   def two_byte?(_), do: false
 
-  def three_byte?(<<0xC3::size(8)>>), do: true
-  def three_byte?(<<0xCD::size(8)>>), do: true
+  def three_byte?(<<0x22::size(8)>>), do: true
   def three_byte?(<<0x2a::size(8)>>), do: true
   def three_byte?(<<0x32::size(8)>>), do: true
   def three_byte?(<<0x3a::size(8)>>), do: true
-  def three_byte?(<<0x22::size(8)>>), do: true
+  def three_byte?(<<0xc3::size(8)>>), do: true
   def three_byte?(<<0xc4::size(8)>>), do: true
   def three_byte?(<<0xcc::size(8)>>), do: true
+  def three_byte?(<<0xcd::size(8)>>), do: true
   def three_byte?(<<0x3::size(2)>> <> <<_cond_code::size(3)>> <> <<0x2::size(3)>>), do: true
   def three_byte?(<<0x3::size(2)>> <> <<_cond_code::size(3)>> <> <<0x4::size(3)>>), do: true
   def three_byte?(<<0x0::size(2)>> <> <<_dest::size(2)>> <> <<0x1::size(4)>>), do: true
   def three_byte?(_), do: false
 
+  #
+  # One byte instructions
+  #
   def decode(<<0x00::size(8)>>), do: "NOP"
   def decode(<<0x02::size(8)>>), do: "LD (BC),A"
   def decode(<<0x07::size(8)>>), do: "RLCA"
@@ -166,12 +169,13 @@ defmodule Instruction do
     "ADC A,#{dest_reg}"
   end
 
-
   def decode(<<_byte>>) do
     raise "Illegal instruction"
   end
 
-
+  #
+  # Two byte instructions
+  #
   def decode(<<0x36::size(8)>>, <<operand::size(8)>>) do
     "LD (HL),#{operand}"
   end
@@ -201,6 +205,9 @@ defmodule Instruction do
   def decode(<<0xfe::size(8)>>, <<operand::size(8)>>), do: "CP #{operand}"
   def decode(<<_instr>>, _operand), do: raise "Invalid instruction"
 
+  #
+  # Three byte instructions
+  #
   def decode(<<0xC3::8>>, operand1, operand2) do
     <<operand::size(16)>> = operand2 <> operand1
     "JP #{operand}"
@@ -234,7 +241,7 @@ defmodule Instruction do
   def decode(<<0::size(2)>> <> <<dest::size(2)>> <> <<0x1::size(4)>>, operand1, operand2) do
     dest_reg = Decode.reg16(<<dest::size(2)>>)
     <<operand::size(16)>> = operand2 <> operand1
-    "LD #{dest_reg},#{operand}"
+    "LD #{dest_reg}, #{operand}"
   end
 
   def decode(<<0x3::size(2)>> <> <<cond_code::size(3)>> <> <<0x2::size(3)>>, operand1, operand2) do
